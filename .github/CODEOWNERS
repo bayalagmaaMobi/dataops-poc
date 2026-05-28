@@ -1,0 +1,14 @@
+# Auto-assigns reviewers based on which files changed.
+# Replace @your-github-username with real GitHub usernames.
+
+# Default — catches everything not matched below
+*                           @bayalagmaaMobi
+
+# dbt models — data team reviews all model changes
+/models/                    @bayalagmaaMobi
+
+# CI and GitHub config — lead reviews infra changes
+/.github/                   @bayalagmaaMobi
+
+# Seed data — anyone on the team can review
+/seeds/                     @bayalagmaaMobi

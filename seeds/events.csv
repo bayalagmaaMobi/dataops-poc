@@ -1,0 +1,11 @@
+event_id,customer_id,event_type,event_date
+2001,1,login,2024-04-01
+2002,2,login,2024-04-01
+2003,1,purchase,2024-04-02
+2004,3,login,2024-04-03
+2005,4,logout,2024-04-03
+2006,5,purchase,2024-04-04
+2007,6,login,2024-04-05
+2008,2,purchase,2024-04-06
+2009,7,login,2024-04-07
+2010,8,login,2024-04-08

@@ -1,0 +1,9 @@
+customer_id,name,email,country,signup_date,plan
+1,Bat-Erdene Gantulga,bat@example.com,Mongolia,2023-01-15,pro
+2,Solongo Munkh,solongo@example.com,Mongolia,2023-02-20,free
+3,Enkhjargal Bold,enkh@example.com,Mongolia,2023-03-10,pro
+4,Gantulga Naran,gantulga@example.com,Mongolia,2023-04-05,free
+5,Oyunbileg Dash,oyun@example.com,Mongolia,2023-05-18,pro
+6,Munkhbat Erden,munkhbat@example.com,Mongolia,2023-06-22,free
+7,Narantsetseg Lkham,naran@example.com,Mongolia,2023-07-30,pro
+8,Tserenpuntsag Bold,tseren@example.com,Mongolia,2023-08-14,free

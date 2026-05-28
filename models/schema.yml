@@ -1,0 +1,103 @@
+version: 2
+
+models:
+  - name: stg_customers
+    description: "Cleaned customer records from the raw customers seed."
+    columns:
+      - name: customer_id
+        description: "Unique identifier for each customer."
+        tests:
+          - not_null
+          - unique
+      - name: customer_name
+        description: "Full name of the customer."
+        tests:
+          - not_null
+      - name: email
+        description: "Customer email address, lowercased."
+        tests:
+          - not_null
+          - unique
+      - name: plan
+        description: "Subscription plan the customer is on."
+        tests:
+          - accepted_values:
+              values: ['pro', 'free']
+      - name: is_paid
+        description: "True if the customer is on a paid plan."
+        tests:
+          - not_null
+
+  - name: stg_orders
+    description: "Cleaned order records from the raw orders seed."
+    columns:
+      - name: order_id
+        description: "Unique identifier for each order."
+        tests:
+          - not_null
+          - unique
+      - name: customer_id
+        description: "The customer who placed the order."
+        tests:
+          - not_null
+      - name: status
+        description: "Current status of the order."
+        tests:
+          - accepted_values:
+              values: ['completed', 'refunded', 'cancelled']
+      - name: amount
+        description: "Raw order amount before status adjustment."
+        tests:
+          - not_null
+      - name: revenue
+        description: "Recognised revenue — only non-zero for completed orders."
+        tests:
+          - not_null
+
+  - name: stg_events
+    description: "Cleaned user events from the raw events seed."
+    columns:
+      - name: event_id
+        description: "Unique identifier for each event."
+        tests:
+          - not_null
+          - unique
+      - name: customer_id
+        description: "The customer who triggered the event."
+        tests:
+          - not_null
+      - name: event_type
+        description: "Type of event the customer performed."
+        tests:
+          - accepted_values:
+              values: ['login', 'logout', 'purchase']
+
+  - name: mart_monthly_revenue
+    description: "Monthly revenue rollup — one row per calendar month."
+    columns:
+      - name: month
+        description: "First day of the calendar month."
+        tests:
+          - not_null
+          - unique
+      - name: total_revenue
+        description: "Sum of revenue for completed orders in this month."
+        tests:
+          - not_null
+
+  - name: mart_customer_summary
+    description: "One row per customer with their full order history summary."
+    columns:
+      - name: customer_id
+        description: "Unique identifier for the customer."
+        tests:
+          - not_null
+          - unique
+      - name: total_orders
+        description: "Total number of orders placed by this customer."
+        tests:
+          - not_null
+      - name: total_spent
+        description: "Total recognised revenue from this customer."
+        tests:
+          - not_null

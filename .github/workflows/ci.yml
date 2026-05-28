@@ -1,0 +1,43 @@
+name: DataOps CI
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  dbt-ci:
+    name: Run dbt checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dbt and DuckDB adapter
+        run: |
+          pip install dbt-duckdb
+
+      - name: Copy profiles.yml
+        run: |
+          mkdir -p ~/.dbt
+          cp profiles.yml ~/.dbt/profiles.yml
+
+      - name: dbt deps
+        run: dbt deps
+
+      - name: dbt seed (load fake data)
+        run: dbt seed
+
+      - name: dbt compile (check SQL is valid)
+        run: dbt compile
+
+      - name: dbt run (build all models)
+        run: dbt run
+
+      - name: dbt test (run all data quality tests)
+        run: dbt test

@@ -1,0 +1,7 @@
+dataops_poc:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: 'dataops_poc.duckdb'
+      threads: 4
