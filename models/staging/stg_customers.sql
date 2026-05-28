@@ -18,3 +18,4 @@ renamed as (
 )
 
 select * from renamed
+-- demo change: confirm pipeline runs on PR
