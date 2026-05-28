@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DataOps PoC — Interactive Guide</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --bg2: #1a1d27;
+    --bg3: #22263a;
+    --border: #2e3352;
+    --accent: #6c63ff;
+    --accent2: #00d4aa;
+    --accent3: #ff6b6b;
+    --accent4: #ffd93d;
+    --text: #e8eaf6;
+    --muted: #8892b0;
+    --green: #00d4aa;
+    --red: #ff6b6b;
+    --yellow: #ffd93d;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; line-height: 1.6; }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: rgba(15,17,23,0.95); backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 2rem; height: 60px;
+  }
+  .nav-logo { font-weight: 700; font-size: 1.1rem; color: var(--accent); }
+  .nav-links { display: flex; gap: 1.5rem; list-style: none; }
+  .nav-links a { color: var(--muted); text-decoration: none; font-size: 0.9rem; transition: color 0.2s; }
+  .nav-links a:hover { color: var(--text); }
+
+  /* SECTIONS */
+  section { padding: 5rem 2rem; max-width: 1100px; margin: 0 auto; }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh; display: flex; flex-direction: column;
+    justify-content: center; align-items: center; text-align: center;
+    max-width: 100%; padding: 5rem 2rem;
+    background: radial-gradient(ellipse at 50% 40%, rgba(108,99,255,0.15) 0%, transparent 70%);
+  }
+  .hero-badge {
+    display: inline-block; background: rgba(108,99,255,0.15); border: 1px solid var(--accent);
+    color: var(--accent); padding: 0.3rem 1rem; border-radius: 20px; font-size: 0.85rem;
+    margin-bottom: 1.5rem; letter-spacing: 0.05em;
+  }
+  .hero h1 { font-size: clamp(2.5rem, 6vw, 4.5rem); font-weight: 800; line-height: 1.1; margin-bottom: 1.5rem; }
+  .hero h1 span { color: var(--accent); }
+  .hero p { font-size: 1.2rem; color: var(--muted); max-width: 600px; margin: 0 auto 2.5rem; }
+  .hero-buttons { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
+  .btn {
+    padding: 0.75rem 1.75rem; border-radius: 8px; font-size: 0.95rem; font-weight: 600;
+    cursor: pointer; border: none; transition: all 0.2s; text-decoration: none; display: inline-block;
+  }
+  .btn-primary { background: var(--accent); color: white; }
+  .btn-primary:hover { background: #7c75ff; transform: translateY(-2px); }
+  .btn-outline { background: transparent; color: var(--text); border: 1px solid var(--border); }
+  .btn-outline:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-2px); }
+
+  /* STATS */
+  .stats-bar {
+    display: flex; justify-content: center; gap: 3rem; flex-wrap: wrap;
+    padding: 2rem; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+    margin-bottom: 5rem; background: var(--bg2);
+  }
+  .stat { text-align: center; }
+  .stat-num { font-size: 2rem; font-weight: 800; color: var(--accent); }
+  .stat-label { font-size: 0.85rem; color: var(--muted); }
+
+  /* SECTION HEADER */
+  .section-header { text-align: center; margin-bottom: 3rem; }
+  .section-tag { display: inline-block; background: rgba(108,99,255,0.12); color: var(--accent); padding: 0.25rem 0.75rem; border-radius: 4px; font-size: 0.8rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 1rem; }
+  .section-header h2 { font-size: 2.2rem; font-weight: 800; margin-bottom: 0.75rem; }
+  .section-header p { color: var(--muted); max-width: 550px; margin: 0 auto; }
+
+  /* PROBLEM */
+  .problem-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+  .problem-card {
+    background: var(--bg2); border: 1px solid var(--border); border-radius: 12px;
+    padding: 2rem; position: relative; overflow: hidden;
+  }
+  .problem-card.bad { border-color: rgba(255,107,107,0.3); }
+  .problem-card.good { border-color: rgba(0,212,170,0.3); }
+  .problem-card .card-label {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    font-size: 0.85rem; font-weight: 700; letter-spacing: 0.05em;
+    padding: 0.25rem 0.75rem; border-radius: 4px; margin-bottom: 1.25rem;
+  }
+  .bad .card-label { background: rgba(255,107,107,0.15); color: var(--red); }
+  .good .card-label { background: rgba(0,212,170,0.15); color: var(--green); }
+  .problem-card h3 { font-size: 1.1rem; margin-bottom: 1rem; }
+  .problem-list { list-style: none; display: flex; flex-direction: column; gap: 0.6rem; }
+  .problem-list li { display: flex; align-items: flex-start; gap: 0.6rem; font-size: 0.92rem; color: var(--muted); }
+  .problem-list li .icon { flex-shrink: 0; margin-top: 2px; }
+
+  /* PILLARS */
+  .pillars-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; }
+  .pillar-card {
+    background: var(--bg2); border: 1px solid var(--border); border-radius: 12px;
+    padding: 1.75rem; cursor: pointer; transition: all 0.25s; position: relative;
+  }
+  .pillar-card:hover { border-color: var(--accent); transform: translateY(-3px); box-shadow: 0 8px 30px rgba(108,99,255,0.15); }
+  .pillar-card.active { border-color: var(--accent); background: rgba(108,99,255,0.08); }
+  .pillar-icon { font-size: 2rem; margin-bottom: 1rem; }
+  .pillar-card h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 0.5rem; }
+  .pillar-card .pillar-summary { font-size: 0.88rem; color: var(--muted); }
+  .pillar-detail {
+    display: none; margin-top: 1rem; padding-top: 1rem;
+    border-top: 1px solid var(--border); font-size: 0.88rem; color: var(--muted);
+  }
+  .pillar-card.active .pillar-detail { display: block; }
+  .pillar-detail .scenario {
+    background: var(--bg3); border-radius: 6px; padding: 0.75rem 1rem;
+    margin-top: 0.75rem; border-left: 3px solid var(--accent);
+  }
+  .pillar-detail .scenario-label { font-size: 0.75rem; color: var(--accent); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.3rem; }
+
+  /* WORKFLOW */
+  .workflow { background: var(--bg2); border: 1px solid var(--border); border-radius: 16px; padding: 2.5rem; }
+  .workflow-steps { display: flex; align-items: flex-start; gap: 0; flex-wrap: wrap; }
+  .workflow-step {
+    flex: 1; min-width: 140px; display: flex; flex-direction: column; align-items: center;
+    text-align: center; position: relative; cursor: pointer;
+  }
+  .workflow-step:not(:last-child)::after {
+    content: '→'; position: absolute; right: -12px; top: 22px;
+    color: var(--accent); font-size: 1.2rem; z-index: 1;
+  }
+  .step-circle {
+    width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center;
+    justify-content: center; font-size: 1.3rem; margin-bottom: 0.75rem;
+    border: 2px solid var(--border); background: var(--bg3); transition: all 0.3s;
+  }
+  .workflow-step.active .step-circle { border-color: var(--accent); background: rgba(108,99,255,0.2); transform: scale(1.1); }
+  .step-title { font-size: 0.82rem; font-weight: 700; margin-bottom: 0.25rem; }
+  .step-sub { font-size: 0.75rem; color: var(--muted); }
+  .workflow-detail {
+    margin-top: 2rem; padding: 1.5rem; background: var(--bg3);
+    border-radius: 10px; border: 1px solid var(--border);
+    display: none;
+  }
+  .workflow-detail.visible { display: block; animation: fadeIn 0.3s ease; }
+  .workflow-detail h4 { font-size: 1rem; margin-bottom: 0.5rem; color: var(--accent); }
+  .workflow-detail p { font-size: 0.9rem; color: var(--muted); margin-bottom: 0.75rem; }
+  .code-block {
+    background: #0d1117; border: 1px solid var(--border); border-radius: 8px;
+    padding: 1rem; font-family: 'Cascadia Code', 'Consolas', monospace;
+    font-size: 0.82rem; color: #a9b1d6; white-space: pre; overflow-x: auto;
+  }
+  .code-block .c { color: #565f89; }
+  .code-block .k { color: #bb9af7; }
+  .code-block .s { color: #9ece6a; }
+  .code-block .cmd { color: #7aa2f7; }
+
+  /* MODELS */
+  .models-flow { display: flex; flex-direction: column; gap: 2rem; }
+  .model-layer { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 1.75rem; }
+  .model-layer-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.25rem; }
+  .layer-badge { padding: 0.25rem 0.75rem; border-radius: 4px; font-size: 0.8rem; font-weight: 700; }
+  .layer-seed { background: rgba(255,217,61,0.15); color: var(--yellow); }
+  .layer-staging { background: rgba(108,99,255,0.15); color: var(--accent); }
+  .layer-marts { background: rgba(0,212,170,0.15); color: var(--green); }
+  .model-layer h3 { font-size: 1rem; font-weight: 700; }
+  .model-layer p { font-size: 0.85rem; color: var(--muted); margin-bottom: 1rem; }
+  .model-cards { display: flex; gap: 1rem; flex-wrap: wrap; }
+  .model-card {
+    background: var(--bg3); border: 1px solid var(--border); border-radius: 8px;
+    padding: 1rem 1.25rem; cursor: pointer; transition: all 0.2s; flex: 1; min-width: 200px;
+  }
+  .model-card:hover { border-color: var(--accent); }
+  .model-card h4 { font-size: 0.88rem; font-weight: 700; margin-bottom: 0.4rem; font-family: monospace; }
+  .model-card p { font-size: 0.8rem; color: var(--muted); }
+  .model-arrow { text-align: center; color: var(--muted); font-size: 1.5rem; }
+
+  /* TESTS */
+  .tests-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+  .tests-table th { text-align: left; padding: 0.75rem 1rem; background: var(--bg3); color: var(--muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid var(--border); }
+  .tests-table td { padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); }
+  .tests-table tr:hover td { background: var(--bg3); }
+  .test-badge { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; margin-right: 0.3rem; }
+  .test-nn { background: rgba(108,99,255,0.15); color: var(--accent); }
+  .test-u { background: rgba(0,212,170,0.15); color: var(--green); }
+  .test-av { background: rgba(255,217,61,0.15); color: var(--yellow); }
+
+  /* SCENARIOS */
+  .scenarios { display: flex; flex-direction: column; gap: 1rem; }
+  .scenario-item {
+    background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; overflow: hidden;
+  }
+  .scenario-trigger {
+    display: flex; align-items: center; gap: 1rem; padding: 1.25rem 1.5rem;
+    cursor: pointer; transition: background 0.2s;
+  }
+  .scenario-trigger:hover { background: var(--bg3); }
+  .scenario-emoji { font-size: 1.4rem; flex-shrink: 0; }
+  .scenario-title { font-weight: 700; font-size: 0.95rem; }
+  .scenario-desc { font-size: 0.82rem; color: var(--muted); }
+  .scenario-arrow { margin-left: auto; color: var(--muted); transition: transform 0.3s; }
+  .scenario-item.open .scenario-arrow { transform: rotate(90deg); }
+  .scenario-body { display: none; padding: 0 1.5rem 1.5rem; }
+  .scenario-item.open .scenario-body { display: block; }
+
+  /* CI DEMO */
+  .ci-demo { background: #0d1117; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  .ci-header { display: flex; align-items: center; gap: 0.75rem; padding: 1rem 1.25rem; background: var(--bg3); border-bottom: 1px solid var(--border); }
+  .ci-dot { width: 12px; height: 12px; border-radius: 50%; }
+  .ci-steps { padding: 1.25rem; display: flex; flex-direction: column; gap: 0.5rem; }
+  .ci-step { display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem 0.75rem; border-radius: 6px; font-size: 0.85rem; font-family: monospace; }
+  .ci-step.pass { color: var(--green); }
+  .ci-step.fail { color: var(--red); }
+  .ci-step.running { color: var(--yellow); }
+  .ci-step.pending { color: var(--muted); }
+
+  /* SPEECH */
+  .speech-sections { display: flex; flex-direction: column; gap: 1.5rem; }
+  .speech-block { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 1.75rem; }
+  .speech-block .speech-label { font-size: 0.75rem; color: var(--accent); font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.5rem; }
+  .speech-block h3 { font-size: 1rem; font-weight: 700; margin-bottom: 0.75rem; }
+  .speech-quote { background: var(--bg3); border-left: 3px solid var(--accent); border-radius: 4px; padding: 1rem 1.25rem; font-style: italic; color: var(--muted); font-size: 0.9rem; line-height: 1.7; margin-bottom: 0.75rem; }
+  .speech-tip { font-size: 0.82rem; color: var(--yellow); }
+
+  /* FOOTER */
+  footer { text-align: center; padding: 3rem 2rem; color: var(--muted); font-size: 0.85rem; border-top: 1px solid var(--border); }
+  footer a { color: var(--accent); text-decoration: none; }
+
+  /* UTILS */
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .fade-in { animation: fadeIn 0.4s ease both; }
+  .tag { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.78rem; font-weight: 600; }
+  .tag-green { background: rgba(0,212,170,0.15); color: var(--green); }
+  .tag-red { background: rgba(255,107,107,0.15); color: var(--red); }
+  .divider { border: none; border-top: 1px solid var(--border); margin: 1rem 0; }
+  .mt1 { margin-top: 0.75rem; }
+  .mt2 { margin-top: 1.25rem; }
+
+  @media (max-width: 700px) {
+    .problem-grid { grid-template-columns: 1fr; }
+    .workflow-steps { gap: 1rem; }
+    .workflow-step:not(:last-child)::after { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">⚡ DataOps PoC</div>
+  <ul class="nav-links">
+    <li><a href="#problem">Problem</a></li>
+    <li><a href="#pillars">Pillars</a></li>
+    <li><a href="#workflow">Workflow</a></li>
+    <li><a href="#models">Models</a></li>
+    <li><a href="#scenarios">Scenarios</a></li>
+    <li><a href="#speech">Speech</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">Proof of Concept</div>
+  <h1>DataOps the way<br><span>software engineers</span> do it</h1>
+  <p>Version control, automated testing, and mandatory code review — applied to data work. No more silent changes, no more broken reports.</p>
+  <div class="hero-buttons">
+    <a href="#problem" class="btn btn-primary">Understand the project</a>
+    <a href="https://github.com/bayalagmaaMobi/dataops-poc" target="_blank" class="btn btn-outline">View on GitHub</a>
+  </div>
+</div>
+
+<!-- STATS -->
+<div class="stats-bar">
+  <div class="stat"><div class="stat-num">5</div><div class="stat-label">Core Pillars</div></div>
+  <div class="stat"><div class="stat-num">17</div><div class="stat-label">Files Tracked</div></div>
+  <div class="stat"><div class="stat-num">20+</div><div class="stat-label">Data Quality Tests</div></div>
+  <div class="stat"><div class="stat-num">~30s</div><div class="stat-label">CI Pipeline Time</div></div>
+  <div class="stat"><div class="stat-num">0</div><div class="stat-label">Direct Pushes to Main</div></div>
+</div>
+
+<!-- PROBLEM -->
+<section id="problem">
+  <div class="section-header">
+    <div class="section-tag">The Problem</div>
+    <h2>Why does this exist?</h2>
+    <p>Data teams have been working without the discipline that software engineers take for granted.</p>
+  </div>
+  <div class="problem-grid">
+    <div class="problem-card bad">
+      <div class="card-label">✗ Before DataOps</div>
+      <h3>The old way — chaotic</h3>
+      <ul class="problem-list">
+        <li><span class="icon">❌</span>Someone edits a SQL query directly in production</li>
+        <li><span class="icon">❌</span>No record of what changed, who changed it, or why</li>
+        <li><span class="icon">❌</span>A broken formula produces wrong revenue numbers</li>
+        <li><span class="icon">❌</span>The business finds out from a wrong report</li>
+        <li><span class="icon">❌</span>You can't roll back — the old version is gone</li>
+        <li><span class="icon">❌</span>Nobody reviewed the change before it went live</li>
+      </ul>
+    </div>
+    <div class="problem-card good">
+      <div class="card-label">✓ With DataOps</div>
+      <h3>The new way — controlled</h3>
+      <ul class="problem-list">
+        <li><span class="icon">✅</span>Every change lives in Git — full history forever</li>
+        <li><span class="icon">✅</span>You know who changed what, when, and why</li>
+        <li><span class="icon">✅</span>Automated tests catch broken logic before merge</li>
+        <li><span class="icon">✅</span>The business is protected — bad code can't reach prod</li>
+        <li><span class="icon">✅</span>Roll back any change in 30 seconds</li>
+        <li><span class="icon">✅</span>Every PR has a mandatory human review + checklist</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- PILLARS -->
+<section id="pillars">
+  <div class="section-header">
+    <div class="section-tag">5 Pillars</div>
+    <h2>How the system works</h2>
+    <p>Click each pillar to understand it deeply — including real scenarios.</p>
+  </div>
+  <div class="pillars-grid">
+
+    <div class="pillar-card" onclick="togglePillar(this)">
+      <div class="pillar-icon">🗂️</div>
+      <h3>1. Git — Version Control</h3>
+      <div class="pillar-summary">Every file tracked. Full history. Roll back anytime.</div>
+      <div class="pillar-detail">
+        <p>Every SQL model, config file, and seed data CSV is stored in Git. This gives you a complete timeline of every change ever made — who did it, when, and what the message said.</p>
+        <div class="scenario">
+          <div class="scenario-label">Real scenario</div>
+          A revenue report shows wrong numbers on Tuesday. You run <code>git log</code> and see that on Sunday someone changed the revenue calculation. You revert the commit in 30 seconds. Crisis over.
+        </div>
+      </div>
+    </div>
+
+    <div class="pillar-card" onclick="togglePillar(this)">
+      <div class="pillar-icon">🌿</div>
+      <h3>2. Branching — Protect main</h3>
+      <div class="pillar-summary">main = production. All changes go through a branch + PR.</div>
+      <div class="pillar-detail">
+        <p><strong>main</strong> is the protected production branch. Nobody — not even the repo owner — can push directly to it. Every change must go through a branch and a pull request.</p>
+        <hr class="divider">
+        <p><strong>Branch naming:</strong></p>
+        <p>🟢 <code>feature/</code> — new models, new data sources<br>
+        🔵 <code>fix/</code> — wrong calculations, bad data<br>
+        🟡 <code>chore/</code> — config updates, dependencies<br>
+        📄 <code>docs/</code> — documentation only<br>
+        🚨 <code>hotfix/</code> — urgent production fixes (still needs review!)</p>
+        <div class="scenario">
+          <div class="scenario-label">Real scenario</div>
+          You need to add a churn rate model. You create <code>feature/churn-rate-model</code>, build it there safely — main stays working the whole time.
+        </div>
+      </div>
+    </div>
+
+    <div class="pillar-card" onclick="togglePillar(this)">
+      <div class="pillar-icon">📋</div>
+      <h3>3. PR Template — Structured review</h3>
+      <div class="pillar-summary">Every PR has a mandatory checklist for author and reviewer.</div>
+      <div class="pillar-detail">
+        <p>When you open a PR on GitHub, a template automatically fills the description. Both sides must engage with it seriously.</p>
+        <p class="mt1"><strong>Author fills in:</strong> what the PR does, what changed, how they tested it.</p>
+        <p class="mt1"><strong>Reviewer ticks off:</strong></p>
+        <ul style="margin-left:1rem;font-size:0.85rem;color:var(--muted)">
+          <li>SQL is readable and follows team style</li>
+          <li>Primary keys have not_null + unique tests</li>
+          <li>No hardcoded dates or credentials</li>
+          <li>schema.yml is updated for new columns</li>
+          <li>CI is passing before approving</li>
+        </ul>
+        <div class="scenario">
+          <div class="scenario-label">Why it matters</div>
+          Without a template, reviewers just glance at the diff and click approve. The template forces both sides to think carefully about the change.
+        </div>
+      </div>
+    </div>
+
+    <div class="pillar-card" onclick="togglePillar(this)">
+      <div class="pillar-icon">⚙️</div>
+      <h3>4. CI Pipeline — Auto quality gate</h3>
+      <div class="pillar-summary">GitHub runs dbt seed → compile → run → test on every PR automatically.</div>
+      <div class="pillar-detail">
+        <p>The moment you open a PR, GitHub Actions spins up a clean server and runs the full dbt pipeline. If anything fails, the merge button stays blocked.</p>
+        <div class="ci-demo mt2">
+          <div class="ci-header">
+            <div class="ci-dot" style="background:#ff5f57"></div>
+            <div class="ci-dot" style="background:#febc2e"></div>
+            <div class="ci-dot" style="background:#28c840"></div>
+            <span style="font-size:0.82rem;color:var(--muted);margin-left:0.5rem">DataOps CI / Run dbt checks</span>
+          </div>
+          <div class="ci-steps">
+            <div class="ci-step pass">✅ dbt seed — loaded 3 CSV files</div>
+            <div class="ci-step pass">✅ dbt compile — all SQL is valid</div>
+            <div class="ci-step pass">✅ dbt run — 5 models built</div>
+            <div class="ci-step pass">✅ dbt test — 22 tests passed</div>
+          </div>
+        </div>
+        <div class="scenario mt2">
+          <div class="scenario-label">Real scenario</div>
+          Someone writes a SQL join that creates duplicate rows. The <code>unique</code> test on customer_id fails. PR is blocked. Bug never reaches production.
+        </div>
+      </div>
+    </div>
+
+    <div class="pillar-card" onclick="togglePillar(this)">
+      <div class="pillar-icon">🔍</div>
+      <h3>5. Data Quality Tests — schema.yml</h3>
+      <div class="pillar-summary">Every column in every model has rules. Violations = CI fails.</div>
+      <div class="pillar-detail">
+        <p>All tests are defined in <code>schema.yml</code> and run automatically on every PR.</p>
+        <p class="mt1">Three types of tests:</p>
+        <p><span class="tag test-nn">not_null</span> Column must never be empty</p>
+        <p class="mt1"><span class="tag test-u">unique</span> No duplicate values allowed</p>
+        <p class="mt1"><span class="tag test-av">accepted_values</span> Only specific values are valid</p>
+        <div class="scenario mt1">
+          <div class="scenario-label">Example</div>
+          <code>plan</code> column only accepts <code>'pro'</code> or <code>'free'</code>. If someone enters <code>'Premium'</code>, the test fails immediately.
+        </div>
+      </div>
+    </div>
+
+    <div class="pillar-card" onclick="togglePillar(this)">
+      <div class="pillar-icon">👥</div>
+      <h3>CODEOWNERS — Auto assign reviewers</h3>
+      <div class="pillar-summary">GitHub automatically assigns the right reviewer based on what files changed.</div>
+      <div class="pillar-detail">
+        <p>The <code>.github/CODEOWNERS</code> file maps file paths to GitHub users. When a PR touches those files, the right person is automatically requested as a reviewer.</p>
+        <p class="mt1">Current setup:</p>
+        <p><code>/models/</code> → <strong>@bayalagmaaMobi</strong> (data engineer reviews SQL changes)</p>
+        <p class="mt1"><code>/.github/</code> → <strong>@bayalagmaaMobi</strong> (lead reviews CI/config changes)</p>
+        <p class="mt1"><code>/seeds/</code> → <strong>@bayalagmaaMobi</strong> (anyone can review seed data)</p>
+        <div class="scenario mt1">
+          <div class="scenario-label">In a real team</div>
+          Different people own different files. The data engineer owns models, the team lead owns CI config, junior analysts own seed data. Reviews go to the right person automatically.
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- WORKFLOW -->
+<section id="workflow">
+  <div class="section-header">
+    <div class="section-tag">Workflow</div>
+    <h2>Step-by-step: how to make a change</h2>
+    <p>Click each step to see exactly what to do and the commands to run.</p>
+  </div>
+  <div class="workflow">
+    <div class="workflow-steps">
+      <div class="workflow-step" onclick="showStep(0)">
+        <div class="step-circle">🌿</div>
+        <div class="step-title">Branch</div>
+        <div class="step-sub">Create a branch</div>
+      </div>
+      <div class="workflow-step" onclick="showStep(1)">
+        <div class="step-circle">✏️</div>
+        <div class="step-title">Edit</div>
+        <div class="step-sub">Make your change</div>
+      </div>
+      <div class="workflow-step" onclick="showStep(2)">
+        <div class="step-circle">🧪</div>
+        <div class="step-title">Test locally</div>
+        <div class="step-sub">Run dbt test</div>
+      </div>
+      <div class="workflow-step" onclick="showStep(3)">
+        <div class="step-circle">📤</div>
+        <div class="step-title">Push + PR</div>
+        <div class="step-sub">Open pull request</div>
+      </div>
+      <div class="workflow-step" onclick="showStep(4)">
+        <div class="step-circle">⚙️</div>
+        <div class="step-title">CI runs</div>
+        <div class="step-sub">Auto quality check</div>
+      </div>
+      <div class="workflow-step" onclick="showStep(5)">
+        <div class="step-circle">👁️</div>
+        <div class="step-title">Review</div>
+        <div class="step-sub">1 approval needed</div>
+      </div>
+      <div class="workflow-step" onclick="showStep(6)">
+        <div class="step-circle">🚀</div>
+        <div class="step-title">Merge</div>
+        <div class="step-sub">Goes to main</div>
+      </div>
+    </div>
+    <div id="step-detail" class="workflow-detail">
+      <h4 id="step-title"></h4>
+      <p id="step-desc"></p>
+      <div id="step-code" class="code-block"></div>
+    </div>
+  </div>
+</section>
+
+<!-- MODELS -->
+<section id="models">
+  <div class="section-header">
+    <div class="section-tag">Data Models</div>
+    <h2>How the data flows</h2>
+    <p>Raw CSV → cleaned views → business tables. Three layers, each with a clear purpose.</p>
+  </div>
+  <div class="models-flow">
+    <div class="model-layer">
+      <div class="model-layer-header">
+        <span class="layer-badge layer-seed">SEEDS</span>
+        <h3>Raw Data — CSV files loaded into the database</h3>
+      </div>
+      <p>Fake sample data representing what real operational data looks like. Used to make CI work without needing a real database connection.</p>
+      <div class="model-cards">
+        <div class="model-card">
+          <h4>customers.csv</h4>
+          <p>8 customers with name, email, country, signup date, plan (pro/free)</p>
+        </div>
+        <div class="model-card">
+          <h4>orders.csv</h4>
+          <p>Orders with amount, status (completed / refunded / cancelled)</p>
+        </div>
+        <div class="model-card">
+          <h4>events.csv</h4>
+          <p>User activity events — login, logout, purchase</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="model-arrow">↓</div>
+
+    <div class="model-layer">
+      <div class="model-layer-header">
+        <span class="layer-badge layer-staging">STAGING</span>
+        <h3>Cleaned Views — standardized, typed, renamed</h3>
+      </div>
+      <p>Takes raw seed data and makes it usable: lowercases emails, casts dates, derives calculated flags. Materialized as <strong>views</strong> (no storage cost, always fresh).</p>
+      <div class="model-cards">
+        <div class="model-card">
+          <h4>stg_customers</h4>
+          <p>Adds <code>is_paid</code> boolean flag based on plan. Lowercases email.</p>
+        </div>
+        <div class="model-card">
+          <h4>stg_orders</h4>
+          <p>Derives <code>revenue</code> — only counts completed orders, zero for refunded/cancelled.</p>
+        </div>
+        <div class="model-card">
+          <h4>stg_events</h4>
+          <p>Cleans event types, ensures consistent formatting across event records.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="model-arrow">↓</div>
+
+    <div class="model-layer">
+      <div class="model-layer-header">
+        <span class="layer-badge layer-marts">MARTS</span>
+        <h3>Business Tables — answers real questions</h3>
+      </div>
+      <p>Joins and aggregates staging models into tables the business actually uses for reporting. Materialized as <strong>tables</strong> (stored, fast to query).</p>
+      <div class="model-cards">
+        <div class="model-card">
+          <h4>mart_monthly_revenue</h4>
+          <p>One row per month. Total revenue, completed orders, refunds, cancellations. Powers trend charts.</p>
+        </div>
+        <div class="model-card">
+          <h4>mart_customer_summary</h4>
+          <p>One row per customer. Total orders, total spent, first/last order date. Powers customer reports.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <br>
+  <div class="section-header" style="margin-top:2rem">
+    <h2>Data Quality Tests</h2>
+    <p>Every column has a rule. Breaking it blocks the merge.</p>
+  </div>
+  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden">
+    <table class="tests-table">
+      <thead>
+        <tr>
+          <th>Model</th>
+          <th>Column</th>
+          <th>Tests</th>
+          <th>What it catches</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>stg_customers</code></td>
+          <td><code>customer_id</code></td>
+          <td><span class="test-badge test-nn">not_null</span><span class="test-badge test-u">unique</span></td>
+          <td>Duplicate or missing customers</td>
+        </tr>
+        <tr>
+          <td><code>stg_customers</code></td>
+          <td><code>plan</code></td>
+          <td><span class="test-badge test-av">accepted_values</span></td>
+          <td>Typos like "Pro", "premium", "PAID"</td>
+        </tr>
+        <tr>
+          <td><code>stg_orders</code></td>
+          <td><code>order_id</code></td>
+          <td><span class="test-badge test-nn">not_null</span><span class="test-badge test-u">unique</span></td>
+          <td>Duplicate orders, missing IDs</td>
+        </tr>
+        <tr>
+          <td><code>stg_orders</code></td>
+          <td><code>status</code></td>
+          <td><span class="test-badge test-av">accepted_values</span></td>
+          <td>Invalid statuses like "pending" or "DONE"</td>
+        </tr>
+        <tr>
+          <td><code>stg_events</code></td>
+          <td><code>event_type</code></td>
+          <td><span class="test-badge test-av">accepted_values</span></td>
+          <td>Unknown event types entering the pipeline</td>
+        </tr>
+        <tr>
+          <td><code>mart_monthly_revenue</code></td>
+          <td><code>month</code></td>
+          <td><span class="test-badge test-nn">not_null</span><span class="test-badge test-u">unique</span></td>
+          <td>Duplicate months in the revenue rollup</td>
+        </tr>
+        <tr>
+          <td><code>mart_customer_summary</code></td>
+          <td><code>customer_id</code></td>
+          <td><span class="test-badge test-nn">not_null</span><span class="test-badge test-u">unique</span></td>
+          <td>One row per customer — no duplicates</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- SCENARIOS -->
+<section id="scenarios">
+  <div class="section-header">
+    <div class="section-tag">Real Scenarios</div>
+    <h2>Every situation you might face</h2>
+    <p>Click each scenario to see exactly what to do.</p>
+  </div>
+  <div class="scenarios">
+
+    <div class="scenario-item" onclick="toggleScenario(this)">
+      <div class="scenario-trigger">
+        <div class="scenario-emoji">✏️</div>
+        <div>
+          <div class="scenario-title">I need to change a SQL model</div>
+          <div class="scenario-desc">Normal everyday change — new logic, new column, refactor</div>
+        </div>
+        <div class="scenario-arrow">▶</div>
+      </div>
+      <div class="scenario-body">
+        <div class="code-block"><span class="c"># 1. Always start from an updated main</span>
+<span class="cmd">git checkout main</span>
+<span class="cmd">git pull</span>
+
+<span class="c"># 2. Create a branch with a clear name</span>
+<span class="cmd">git checkout -b feature/add-churn-model</span>
+
+<span class="c"># 3. Edit the SQL file in models/</span>
+<span class="c"># 4. Test locally first</span>
+<span class="cmd">dbt run && dbt test</span>
+
+<span class="c"># 5. Commit with a descriptive message</span>
+<span class="cmd">git add .</span>
+<span class="cmd">git commit -m "feat: add customer churn rate model"</span>
+
+<span class="c"># 6. Push and open a PR on GitHub</span>
+<span class="cmd">git push origin feature/add-churn-model</span></div>
+        <p class="mt1" style="font-size:0.85rem;color:var(--muted)">Then open the PR on GitHub → fill in the template → wait for CI → get 1 approval → merge.</p>
+      </div>
+    </div>
+
+    <div class="scenario-item" onclick="toggleScenario(this)">
+      <div class="scenario-trigger">
+        <div class="scenario-emoji">❌</div>
+        <div>
+          <div class="scenario-title">CI failed on my PR — what do I do?</div>
+          <div class="scenario-desc">Red X on the PR, merge is blocked</div>
+        </div>
+        <div class="scenario-arrow">▶</div>
+      </div>
+      <div class="scenario-body">
+        <p style="font-size:0.88rem;color:var(--muted);margin-bottom:0.75rem">1. Click the red ✗ → "Details" to see which step failed and the exact error.</p>
+        <p style="font-size:0.88rem;color:var(--muted);margin-bottom:0.75rem">2. Fix the issue in your code locally. Run <code>dbt test</code> yourself to confirm it's fixed.</p>
+        <div class="code-block"><span class="cmd">dbt run && dbt test</span>
+<span class="c"># All 22 tests passed? Good.</span>
+
+<span class="cmd">git add .</span>
+<span class="cmd">git commit -m "fix: resolve failing unique test on customer_id"</span>
+<span class="cmd">git push origin feature/your-branch</span>
+<span class="c"># CI reruns automatically on the new commit</span></div>
+        <p class="mt1" style="font-size:0.85rem;color:var(--muted)">Common failures: duplicate rows (unique test fails), wrong column values (accepted_values fails), syntax error (compile step fails).</p>
+      </div>
+    </div>
+
+    <div class="scenario-item" onclick="toggleScenario(this)">
+      <div class="scenario-trigger">
+        <div class="scenario-emoji">🚨</div>
+        <div>
+          <div class="scenario-title">I need to fix something urgently in production</div>
+          <div class="scenario-desc">A hotfix — something is wrong right now</div>
+        </div>
+        <div class="scenario-arrow">▶</div>
+      </div>
+      <div class="scenario-body">
+        <div class="code-block"><span class="cmd">git checkout main</span>
+<span class="cmd">git pull</span>
+<span class="cmd">git checkout -b hotfix/fix-revenue-calculation</span>
+
+<span class="c"># Make the fix</span>
+<span class="cmd">git commit -am "hotfix: correct revenue calculation for refunded orders"</span>
+<span class="cmd">git push origin hotfix/fix-revenue-calculation</span></div>
+        <p class="mt1" style="font-size:0.85rem;color:var(--accent)">⚠️ Even hotfixes go through a PR. Branch protection applies to everyone. This is intentional — a panicked direct push is how you make a bad situation worse.</p>
+      </div>
+    </div>
+
+    <div class="scenario-item" onclick="toggleScenario(this)">
+      <div class="scenario-trigger">
+        <div class="scenario-emoji">⏪</div>
+        <div>
+          <div class="scenario-title">A bad change got merged — how do I roll back?</div>
+          <div class="scenario-desc">Something wrong is now on main</div>
+        </div>
+        <div class="scenario-arrow">▶</div>
+      </div>
+      <div class="scenario-body">
+        <div class="code-block"><span class="cmd">git checkout main</span>
+<span class="cmd">git pull</span>
+
+<span class="c"># Find the bad commit hash</span>
+<span class="cmd">git log --oneline -10</span>
+
+<span class="c"># Revert it (creates a new commit that undoes it)</span>
+<span class="cmd">git revert abc1234</span>
+
+<span class="c"># Open as a PR — revert also needs review</span>
+<span class="cmd">git checkout -b fix/revert-bad-change</span>
+<span class="cmd">git push origin fix/revert-bad-change</span></div>
+        <p class="mt1" style="font-size:0.85rem;color:var(--muted)">Use <code>git revert</code> not <code>git reset --hard</code>. Revert adds a new commit (safe, auditable). Reset rewrites history (dangerous on shared branches).</p>
+      </div>
+    </div>
+
+    <div class="scenario-item" onclick="toggleScenario(this)">
+      <div class="scenario-trigger">
+        <div class="scenario-emoji">➕</div>
+        <div>
+          <div class="scenario-title">I want to add a completely new model</div>
+          <div class="scenario-desc">New data source, new business question</div>
+        </div>
+        <div class="scenario-arrow">▶</div>
+      </div>
+      <div class="scenario-body">
+        <p style="font-size:0.88rem;color:var(--muted);margin-bottom:0.75rem">You need to do two things: create the SQL file AND add it to schema.yml with tests.</p>
+        <div class="code-block"><span class="c"># 1. Create the model file</span>
+<span class="c"># models/marts/mart_churn_rate.sql</span>
+
+<span class="c"># 2. Add it to schema.yml with column tests</span>
+<span class="c"># models/schema.yml</span>
+<span class="s">  - name: mart_churn_rate</span>
+<span class="s">    description: "Monthly churn rate calculation"</span>
+<span class="s">    columns:</span>
+<span class="s">      - name: month</span>
+<span class="s">        tests: [not_null, unique]</span>
+<span class="s">      - name: churn_rate</span>
+<span class="s">        tests: [not_null]</span>
+
+<span class="c"># 3. Test locally</span>
+<span class="cmd">dbt run --select mart_churn_rate</span>
+<span class="cmd">dbt test --select mart_churn_rate</span></div>
+        <p class="mt1" style="font-size:0.85rem;color:var(--accent)">A model without tests in schema.yml is incomplete. CI will still pass but you lose the quality safety net.</p>
+      </div>
+    </div>
+
+    <div class="scenario-item" onclick="toggleScenario(this)">
+      <div class="scenario-trigger">
+        <div class="scenario-emoji">📊</div>
+        <div>
+          <div class="scenario-title">I need to update seed data (CSV files)</div>
+          <div class="scenario-desc">Adding new customers, new orders, fixing test data</div>
+        </div>
+        <div class="scenario-arrow">▶</div>
+      </div>
+      <div class="scenario-body">
+        <p style="font-size:0.88rem;color:var(--muted);margin-bottom:0.75rem">Seed files are versioned just like SQL. Edit the CSV on a branch, PR it in.</p>
+        <div class="code-block"><span class="cmd">git checkout -b chore/update-seed-data</span>
+
+<span class="c"># Edit seeds/customers.csv or seeds/orders.csv</span>
+
+<span class="c"># Test that the new data passes all tests</span>
+<span class="cmd">dbt seed</span>
+<span class="cmd">dbt run && dbt test</span>
+
+<span class="cmd">git commit -am "chore: add 5 new test customers to seed data"</span>
+<span class="cmd">git push origin chore/update-seed-data</span></div>
+        <p class="mt1" style="font-size:0.85rem;color:var(--muted)">Make sure new rows don't break accepted_values or unique tests — e.g. a new customer with plan = "enterprise" will fail the test.</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- SPEECH -->
+<section id="speech">
+  <div class="section-header">
+    <div class="section-tag">Speech Guide</div>
+    <h2>What to say in your presentation</h2>
+    <p>A ready-to-use script for each section of your talk.</p>
+  </div>
+  <div class="speech-sections">
+
+    <div class="speech-block">
+      <div class="speech-label">Opening · ~1 minute</div>
+      <h3>Start with the problem they recognize</h3>
+      <div class="speech-quote">"Right now, when someone on the data team changes a SQL query, a report formula, or a data file — what happens? Nothing is recorded. No one reviews it. If it breaks, we find out when the business gets a wrong number. And we have no way to know what changed or go back. This is exactly how software teams worked 20 years ago — before they developed a better way."</div>
+      <div class="speech-tip">💡 Pause after "wrong number" — let it land before continuing.</div>
+    </div>
+
+    <div class="speech-block">
+      <div class="speech-label">What is DataOps · ~1 minute</div>
+      <h3>Explain the concept in one sentence</h3>
+      <div class="speech-quote">"DataOps applies the same discipline that software engineers use to data work. Every change lives in version control. Every change goes through a review. Automated tests run before anything touches production. This project is a proof of concept showing exactly how that works — with tools that are free and run entirely on a laptop."</div>
+    </div>
+
+    <div class="speech-block">
+      <div class="speech-label">Live Demo · ~3-4 minutes</div>
+      <h3>Walk them through the repo on screen</h3>
+      <div class="speech-quote">"Let me show you the repo. [Show GitHub] Every file you see — the SQL, the config, the test data — is tracked in Git. Full history, every change, every author. [Open a model file] This is a SQL model. Notice every column is documented and tested. [Open schema.yml] These are the rules — if any data violates them, CI fails and the merge is blocked. [Show the CI run] This is what happens automatically the moment someone opens a pull request. 30 seconds — GitHub runs the full pipeline. [Show the blocked merge] And this is the key moment. CI passed. But there's no approval yet. The system physically cannot merge. No human override exists."</div>
+      <div class="speech-tip">💡 Show PR #1 — it was merged after CI passed. Show the branch protection settings page to prove the rules are enforced.</div>
+    </div>
+
+    <div class="speech-block">
+      <div class="speech-label">Business Value · ~1 minute</div>
+      <h3>Connect it to what they care about</h3>
+      <div class="speech-quote">"When a report shows wrong revenue numbers, we will know within minutes exactly what changed, who changed it, and we can roll it back in seconds. When someone wants to add a new data source, it goes through review before it affects any report. When a new team member joins, they can read the full history of every decision ever made. This is how you build trust in your data — not with hope, but with process."</div>
+    </div>
+
+    <div class="speech-block">
+      <div class="speech-label">Closing · ~30 seconds</div>
+      <h3>Simple, confident finish</h3>
+      <div class="speech-quote">"This runs entirely with free tools — Git, GitHub, dbt, and DuckDB. No servers, no infrastructure cost to get started. The process is the product. The discipline is the value."</div>
+      <div class="speech-tip">💡 Stop there. Don't add "any questions?" immediately — hold the silence for 2 seconds first. It lands better.</div>
+    </div>
+
+  </div>
+</section>
+
+<footer>
+  Built for the DataOps PoC presentation —
+  <a href="https://github.com/bayalagmaaMobi/dataops-poc" target="_blank">github.com/bayalagmaaMobi/dataops-poc</a>
+</footer>
+
+<script>
+  // PILLAR TOGGLE
+  function togglePillar(card) {
+    const wasActive = card.classList.contains('active');
+    document.querySelectorAll('.pillar-card').forEach(c => c.classList.remove('active'));
+    if (!wasActive) card.classList.add('active');
+  }
+
+  // WORKFLOW STEPS
+  const steps = [
+    {
+      title: '🌿 Step 1 — Create a branch',
+      desc: 'Never work directly on main. Always create a new branch with a clear, descriptive name. The prefix tells your team what kind of change this is.',
+      code: `git checkout main
+git pull                              # always start from latest main
+git checkout -b feature/your-change-name`
+    },
+    {
+      title: '✏️ Step 2 — Make your change',
+      desc: 'Edit the SQL model, update schema.yml with any new columns, or modify seed data. Keep the change focused — one thing per PR.',
+      code: `# Edit files in models/, seeds/, or schema.yml
+# Keep changes small and focused
+# One logical change per branch`
+    },
+    {
+      title: '🧪 Step 3 — Test locally before pushing',
+      desc: 'Run dbt yourself before pushing. Catch failures on your machine before they become a CI failure that everyone sees.',
+      code: `dbt seed         # reload seed data
+dbt run          # build all models
+dbt test         # run all quality tests
+# All 22 tests passed? Good. Push.`
+    },
+    {
+      title: '📤 Step 4 — Push and open a PR',
+      desc: 'Push your branch to GitHub, then open a Pull Request. The PR template will appear automatically — fill it in properly.',
+      code: `git add .
+git commit -m "feat: describe what you changed"
+git push origin feature/your-change-name
+# Then open PR on GitHub — fill in the template`
+    },
+    {
+      title: '⚙️ Step 5 — CI runs automatically',
+      desc: 'The moment you open the PR, GitHub Actions runs dbt seed → compile → run → test on a clean server. You don\'t need to trigger it. If it fails, fix the issue and push again — CI reruns automatically.',
+      code: `# GitHub Actions runs:
+dbt seed      ✅ loads test data
+dbt compile   ✅ validates all SQL syntax
+dbt run       ✅ builds all 5 models
+dbt test      ✅ 22 tests pass
+# ~30 seconds total`
+    },
+    {
+      title: '👁️ Step 6 — Get 1 approval',
+      desc: 'CI passed but the merge is still blocked. A teammate (or the repo owner) must review the PR and click Approve. They check the PR template checklist: readable SQL, tests added, no hardcoded values, schema.yml updated.',
+      code: `# Reviewer checks:
+# ✅ SQL is readable
+# ✅ Primary keys have not_null + unique tests
+# ✅ No hardcoded dates or credentials
+# ✅ schema.yml updated for new columns
+# ✅ CI is green
+# Then clicks: Approve`
+    },
+    {
+      title: '🚀 Step 7 — Merge to main',
+      desc: 'Both gates passed: CI is green and 1 approval is in. The green Merge button is now active. Click it, confirm, and optionally delete the branch. Your change is now in production.',
+      code: `# On GitHub: click green "Merge pull request"
+# Click "Confirm merge"
+# Click "Delete branch" (clean up)
+
+# Your change is now on main ✅
+git checkout main
+git pull  # grab the merged change locally`
+    }
+  ];
+
+  function showStep(i) {
+    const detail = document.getElementById('step-detail');
+    document.getElementById('step-title').textContent = steps[i].title;
+    document.getElementById('step-desc').textContent = steps[i].desc;
+    document.getElementById('step-code').textContent = steps[i].code;
+    detail.classList.add('visible');
+    document.querySelectorAll('.workflow-step').forEach((s, idx) => {
+      s.classList.toggle('active', idx === i);
+    });
+  }
+
+  // SCENARIO TOGGLE
+  function toggleScenario(item) {
+    const isOpen = item.classList.contains('open');
+    document.querySelectorAll('.scenario-item').forEach(s => s.classList.remove('open'));
+    if (!isOpen) item.classList.add('open');
+  }
+
+  // NAV active highlight on scroll
+  const sections = document.querySelectorAll('section[id]');
+  window.addEventListener('scroll', () => {
+    let current = '';
+    sections.forEach(s => {
+      if (window.scrollY >= s.offsetTop - 100) current = s.id;
+    });
+    document.querySelectorAll('.nav-links a').forEach(a => {
+      a.style.color = a.getAttribute('href') === '#' + current ? 'var(--text)' : '';
+    });
+  });
+
+  // Auto-show first workflow step
+  showStep(0);
+</script>
+</body>
+</html>
